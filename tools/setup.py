@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Install checksum-verified OpenMW and pinned assets locally on Linux or Windows."""
 import argparse
+from fnmatch import fnmatchcase
 import hashlib
 import json
 import os
@@ -196,9 +197,10 @@ def verify_assets(lock):
     run('git', '-C', str(TEMPLATE), 'lfs', 'pull', '--include=' + lock['template']['lfs_include'], '--exclude=')
     entries = subprocess.check_output(['git', '-C', str(TEMPLATE), 'lfs', 'ls-files', '--json'], text=True)
     count = 0
+    patterns = lock['template']['lfs_include'].split(',')
     for item in json.loads(entries)['files']:
         name = item['name']
-        if name.startswith(('game_template/data/', 'example_animated_creature/data/')):
+        if any(fnmatchcase(name, pattern) for pattern in patterns):
             verify_file(TEMPLATE / name, item['oid'])
             count += 1
     return count

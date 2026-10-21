@@ -2,6 +2,8 @@
 """Build a small ESM3 addon and original placeholder geometry from source."""
 from pathlib import Path
 import argparse
+import hashlib
+import json
 import struct
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,34 +40,63 @@ def subs(data):
         offset += 8 + size
 
 
-def box(path, size, color, center=(0, 0, 0)):
+def stage_assets(build):
+    manifest = json.loads((ROOT/'assets/manifest.json').read_text(encoding='utf-8'))
+    for item in manifest['files']:
+        source = TEMPLATE/item['source']
+        error = 'Missing or modified art asset; run tools/setup.py: ' + item['source']
+        if not source.is_file():
+            raise RuntimeError(error)
+        data = source.read_bytes()
+        if source.suffix.lower() == '.dae' and hashlib.sha256(data).hexdigest() != item['sha256']:
+            # Git for Windows may convert XML models to CRLF on checkout.
+            # Restore upstream LF bytes only when their pinned digest matches.
+            data = data.replace(b'\r\n', b'\n')
+        if hashlib.sha256(data).hexdigest() != item['sha256']:
+            raise RuntimeError(error)
+        target = build/item['path']
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+    (build/'asset-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n', encoding='utf-8')
+
+
+def box(path, size, color, center=(0, 0, 0), texture=None, tiles=1):
     x, y, z = [s / 2 for s in size]
     vertices = [(-x,-y,-z),(x,-y,-z),(x,y,-z),(-x,y,-z),(-x,-y,z),(x,-y,z),(x,y,z),(-x,y,z)]
     faces = [((0,3,2,1),(0,0,-1)),((4,5,6,7),(0,0,1)),((0,1,5,4),(0,-1,0)),
              ((1,2,6,5),(1,0,0)),((2,3,7,6),(0,1,0)),((3,0,4,7),(-1,0,0))]
-    positions, normals = [], []
+    positions, normals, texcoords = [], [], []
     for indices, normal in faces:
-        for i in (0,1,2,0,2,3):
-            positions.append(' '.join(str(vertices[indices[i]][j]+center[j]) for j in range(3)))
+        for corner in (0,1,2,0,2,3):
+            i = indices[corner]
+            positions.append(' '.join(str(vertices[i][j]+center[j]) for j in range(3)))
             normals.append(' '.join(map(str, normal)))
+            texcoords.append(' '.join(map(str, ((0,0),(tiles,0),(tiles,tiles),(0,tiles))[corner])))
+    images = parameters = ''
+    diffuse = '<color>'+' '.join(map(str,color))+'</color>'
+    if texture:
+        images = '<library_images><image id="surface-image"><init_from>'+texture+'</init_from></image></library_images>'
+        parameters = '<newparam sid="surface"><surface type="2D"><init_from>surface-image</init_from></surface></newparam><newparam sid="surface-sampler"><sampler2D><source>surface</source></sampler2D></newparam>'
+        diffuse = '<texture texture="surface-sampler" texcoord="UVMap"/>'
     # COLLADA is the documented import path and avoids relying on OSG serializer versions.
     text = '''<?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
 <asset><created>2026-10-21T00:00:00Z</created><modified>2026-10-21T00:00:00Z</modified><unit name="meter" meter="1"/><up_axis>Z_UP</up_axis></asset>
-<library_effects><effect id="effect"><profile_COMMON><technique sid="common"><phong>
-<ambient><color>0.3 0.3 0.3 1</color></ambient><diffuse><color>%s</color></diffuse>
+%s<library_effects><effect id="effect"><profile_COMMON>%s<technique sid="common"><phong>
+<ambient><color>0.3 0.3 0.3 1</color></ambient><diffuse>%s</diffuse>
 </phong></technique></profile_COMMON></effect></library_effects>
 <library_materials><material id="material"><instance_effect url="#effect"/></material></library_materials>
 <library_geometries><geometry id="box"><mesh>
 <source id="positions"><float_array id="positions-array" count="108">%s</float_array><technique_common><accessor source="#positions-array" count="36" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source>
 <source id="normals"><float_array id="normals-array" count="108">%s</float_array><technique_common><accessor source="#normals-array" count="36" stride="3"><param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/></accessor></technique_common></source>
+<source id="uv"><float_array id="uv-array" count="72">%s</float_array><technique_common><accessor source="#uv-array" count="36" stride="2"><param name="S" type="float"/><param name="T" type="float"/></accessor></technique_common></source>
 <vertices id="vertices"><input semantic="POSITION" source="#positions"/></vertices>
-<triangles count="12" material="surface"><input semantic="VERTEX" source="#vertices" offset="0"/><input semantic="NORMAL" source="#normals" offset="1"/><p>%s</p></triangles>
+<triangles count="12" material="surface"><input semantic="VERTEX" source="#vertices" offset="0"/><input semantic="NORMAL" source="#normals" offset="1"/><input semantic="TEXCOORD" source="#uv" offset="2" set="0"/><p>%s</p></triangles>
 </mesh></geometry></library_geometries>
-<library_visual_scenes><visual_scene id="scene"><node id="mesh" name="mesh"><instance_geometry url="#box"><bind_material><technique_common><instance_material symbol="surface" target="#material"/></technique_common></bind_material></instance_geometry></node></visual_scene></library_visual_scenes>
+<library_visual_scenes><visual_scene id="scene"><node id="mesh" name="mesh"><instance_geometry url="#box"><bind_material><technique_common><instance_material symbol="surface" target="#material"><bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/></instance_material></technique_common></bind_material></instance_geometry></node></visual_scene></library_visual_scenes>
 <scene><instance_visual_scene url="#scene"/></scene></COLLADA>
-''' % (' '.join(map(str,color)), ' '.join(positions), ' '.join(normals),
-       ' '.join(str(i) for i in range(36) for _ in range(2)))
+''' % (images, parameters, diffuse, ' '.join(positions), ' '.join(normals), ' '.join(texcoords),
+       ' '.join(str(i) for i in range(36) for _ in range(3)))
     path.write_text(text,encoding='utf-8')
 
 
@@ -82,15 +113,15 @@ def main(output=None):
     build = Path(output) if output is not None else BUILD
     meshes = build / 'meshes/echo'
     meshes.mkdir(parents=True, exist_ok=True)
+    stage_assets(build)
     definitions = {
         'floor': ((2200,2200,50),(.075,.09,.14,1),(0,0,-25)),
         'wall': ((2200,70,300),(.13,.15,.22,1),(0,0,150)),
-        'pillar': ((90,90,360),(.18,.2,.3,1),(0,0,180)),
         'rune': ((180,180,4),(.08,.65,.9,1),(0,0,3)),
-        'blade': ((6,9,100),(.3,.8,1,1),(0,0,35)),
     }
     for name, (size,color,center) in definitions.items():
-        box(meshes / (name+'.dae'),size,color,center)
+        box(meshes / (name+'.dae'),size,color,center,
+            texture='textures/ground/road_01.dds' if name == 'floor' else None, tiles=8)
     box(meshes/'empty.dae',(.001,.001,.001),(0,0,0,0))
     dds(build/'textures/echo/white.dds',(255,255,255,255))
     dds(build/'textures/hu_male.dds',(112,160,195,255))
@@ -100,12 +131,20 @@ def main(output=None):
 
     contents = []
     for name in definitions:
-        if name == 'blade':
-            wpdt = struct.pack('<fihHffH6Bi', 1,0,2,1000,1.5,1.6,0, 1,1,1,1,1,1,0)
-            contents.append(record('WEAP',sub('NAME','eh_blade')+sub('MODL','echo/blade.dae')+
-                                   sub('FNAM','Echo Blade')+sub('WPDT',wpdt)))
-        else:
-            contents.append(record('STAT',sub('NAME','eh_'+name)+sub('MODL','echo/'+name+'.dae')))
+        contents.append(record('STAT',sub('NAME','eh_'+name)+sub('MODL','echo/'+name+'.dae')))
+    wpdt = struct.pack('<fihHffH6Bi', 1,0,2,1000,1.5,1.6,0, 1,1,1,1,1,1,0)
+    contents.append(record('WEAP',sub('NAME','eh_blade')+sub('MODL','weapons/basic_sword2h.dae')+
+                           sub('FNAM','Echo Blade')+sub('WPDT',wpdt)))
+    for name, model in {
+        'pillar': 'architecture/HubTemple_Pillar01.dae',
+        'gate': 'architecture/HubTemple_DoorFrame01.dae',
+        'chest': 'containers/Hub_Chest01.dae',
+        'weapon_stand': 'architecture/Hub_WeaponStand01.dae',
+        'display_sword': 'weapons/basic_sword2h.dae',
+        'display_axe': 'weapons/basic_axe1h.dae',
+        'barrel': 'the_barrel.dae',
+    }.items():
+        contents.append(record('STAT',sub('NAME','eh_'+name)+sub('MODL',model)))
     for key,value in {'FontColor_color_header':'105,205,255','FontColor_color_normal':'225,235,245'}.items():
         contents.append(record('GMST', sub('NAME',key)+sub('STRV',value)))
 
@@ -152,11 +191,17 @@ def main(output=None):
     cell+=sub('AMBI',struct.pack('<IIIf',0xFF655C50,0xFFB8AEA0,0xFF28180F,0.4))
     placements=[('floor',0,0,0,0),('wall',0,1100,0,0),('wall',0,-1100,0,0),
                 ('wall',1100,0,0,1.5707963),('wall',-1100,0,0,1.5707963)]
-    placements += [('pillar',x,y,0,0) for x,y in [(-800,-800),(800,-800),(-800,800),(800,800)]]
+    placements += [('pillar',x,y,37.107,0) for x in (-800,800) for y in (-800,0,800)]
     placements += [('rune',x,y,0,0) for x,y in [(-650,0),(650,0),(0,650)]]
+    placements += [('gate',0,y,171.092,0) for y in (-1040,1040)]
+    placements += [('chest',x,600,0,0) for x in (-925,925)]
+    placements += [('weapon_stand',x,-550,4.4,0) for x in (-930,930)]
+    placements += [('display_sword',-930,-540,80,0),('display_axe',930,-540,80,0)]
+    placements += [('barrel',x,y,0,0) for x,y in [(-930,-300),(-850,-350),(930,300)]]
     for index,(name,x,y,z,yaw) in enumerate(placements,1):
         cell+=sub('FRMR',struct.pack('<I',index))+sub('NAME','eh_'+name)
-        cell+=sub('DATA',struct.pack('<6f',x,y,z,0,0,yaw))
+        pitch = 1.5707963 if name.startswith('display_') else 0
+        cell+=sub('DATA',struct.pack('<6f',x,y,z,pitch,0,yaw))
     contents.append(record('CELL',cell))
     header=sub('HEDR',struct.pack('<fi32s256si',1.3,0,b'Echo Hunter',b'Original standalone action prototype',len(contents)))
     master=TEMPLATE/'game_template/data/template.omwgame'

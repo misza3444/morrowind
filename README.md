@@ -2,9 +2,11 @@
 
 Samodzielny prototyp RPG akcji inspirowanego dynamiką *Solo Leveling: ARISE*. Korzysta z OpenMW **0.51.0**, własnej areny i Lua. Nie wymaga instalacji ani plików Morrowinda.
 
+Projekt powstaje **niekomercyjnie**. Korzystamy z gotowych paczek modeli na warunkach ich licencji. Arena wykorzystuje kamienne elementy świątyni, miecz, topór, skrzynie, stojaki i beczki z OpenMW Example Suite (CC0); pochodzenie i dobór plików opisuje [ART_ASSETS.md](docs/ART_ASSETS.md).
+
 Obecna wersja to techniczny prototyp walki: kamera zza pleców, namierzanie, trzy ciosy combo z buforem wejścia, unik z krótką nietykalnością, dwie zdolności, dwóch strażników i boss. Działają zakończenie wyprawy, licznik zdobytych ech, restart i zapis stanu. Postacie i animacje są zasobami zastępczymi z oficjalnego Example Suite; grafika nie jest docelowa.
 
-![Rzeczywisty kadr z prototypu w OpenMW](docs/images/arena.png)
+![Rzeczywisty kadr z areny po dołączeniu modeli Example Suite](docs/images/temple.png)
 
 **Windows 10/11 x64 — gotowa paczka**
 
@@ -55,6 +57,7 @@ Umiejętności i unik korzystają z czasu symulacji; pauza zatrzymuje odnowienie
 - `game/scripts/echo/`: reguły walki, sterowanie, HUD, zachowanie przeciwników, stan wyprawy i zapis.
 - `tools/build_content.py`: generator dodatku `.omwaddon`, areny, modeli COLLADA i tekstur zastępczych. Wygenerowany dodatek można otworzyć w OpenMW-CS z szablonem jako plikiem nadrzędnym.
 - `dependencies.lock.json`: przypięte wydanie silnika, suma kontrolna i commit zasobów.
+- `assets/manifest.json`: wybrane modele i tekstury gotowej paczki, źródło, licencja i SHA-256; generator kopiuje je do budowanej gry.
 - `packaging/windows/`: źródło natywnego launchera `Graj.exe` i instrukcja paczki; `tools/package_windows.py` buduje ZIP z manifestem SHA-256.
 - `tests/engine/`: testy wykonujące kod gry w prawdziwym silniku; ich skrypty nie są ładowane podczas zwykłej gry.
 - `.runtime/`: pobrany silnik, zasoby oraz oddzielne profile gry i testów; katalog pomijany przez Git.

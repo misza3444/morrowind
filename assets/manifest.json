@@ -1,0 +1,65 @@
+{
+  "pack": "OpenMW Example Suite",
+  "source": "https://gitlab.com/OpenMW/example-suite.git",
+  "commit": "a41b44d9403ff3f8a1505c1b4bc152c4dd623b64",
+  "license": "CC0-1.0",
+  "license_file": "LICENSE",
+  "authors_file": "AUTHORS.md",
+  "files": [
+    {
+      "source": "the_hub/data/meshes/architecture/HubTemple_Pillar01.dae",
+      "path": "meshes/architecture/HubTemple_Pillar01.dae",
+      "sha256": "510842da98909db86b3e8b15194775e8fa62deb551e29cffe7ede0f89524f938"
+    },
+    {
+      "source": "the_hub/data/meshes/architecture/HubTemple_DoorFrame01.dae",
+      "path": "meshes/architecture/HubTemple_DoorFrame01.dae",
+      "sha256": "4a832e72107f812da04469dc8b2778ebb887c1f70c91279ca7e8e1cb0969f687"
+    },
+    {
+      "source": "the_hub/data/meshes/architecture/Hub_WeaponStand01.dae",
+      "path": "meshes/architecture/Hub_WeaponStand01.dae",
+      "sha256": "54ffaa8ae2147d8131edd05af1ac0adedc8d60b298c032900a1f385dbfb66955"
+    },
+    {
+      "source": "the_hub/data/meshes/containers/Hub_Chest01.dae",
+      "path": "meshes/containers/Hub_Chest01.dae",
+      "sha256": "cef8edc545ea7c241ca995e231e24215b63113b584bd4e9886042fe0211e0494"
+    },
+    {
+      "source": "the_hub/data/meshes/weapons/basic_sword2h.dae",
+      "path": "meshes/weapons/basic_sword2h.dae",
+      "sha256": "0c59a876b09d66d0fb079b05abd587a291718c3ed5cc26cd2bc31221518e2dcf"
+    },
+    {
+      "source": "the_hub/data/meshes/weapons/basic_axe1h.dae",
+      "path": "meshes/weapons/basic_axe1h.dae",
+      "sha256": "e674658068e755669d28709432b0cdd89ed8cb78dd852c5ade225974f41d6f18"
+    },
+    {
+      "source": "example_static_props/data/meshes/the_barrel.dae",
+      "path": "meshes/the_barrel.dae",
+      "sha256": "a80aedc02e27f0b311e798029a8065bb9ef05bfd4d8a0d60de4f52ad4c58af39"
+    },
+    {
+      "source": "example_static_props/data/textures/the_barrel.dds",
+      "path": "textures/the_barrel.dds",
+      "sha256": "c884e7344b6a6e467cc0a0605218e589691d17eff493b1055d30d2202740d26b"
+    },
+    {
+      "source": "example_static_props/data/textures/the_barrel_n.dds",
+      "path": "textures/the_barrel_n.dds",
+      "sha256": "7ffbcf702423ac162904ec62daa12faa4211aea070290e7701cdec64bff82290"
+    },
+    {
+      "source": "example_static_props/data/textures/the_barrel_spec.dds",
+      "path": "textures/the_barrel_spec.dds",
+      "sha256": "ca556e1c7ad92d6908507fdf99d5c598d5ac66e26073eb23fcf48db1648644d0"
+    },
+    {
+      "source": "the_hub/data/textures/ground/road_01.dds",
+      "path": "textures/ground/road_01.dds",
+      "sha256": "7680f58ca09d4c5206b2a27f987959d0bb35c9f389a21b00c365ce6787007b6a"
+    }
+  ]
+}

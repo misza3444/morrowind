@@ -12,6 +12,6 @@
   "template": {
     "url": "https://gitlab.com/OpenMW/example-suite.git",
     "commit": "a41b44d9403ff3f8a1505c1b4bc152c4dd623b64",
-    "lfs_include": "game_template/data/**,example_animated_creature/data/**"
+    "lfs_include": "game_template/data/**,example_animated_creature/data/**,example_static_props/data/**,the_hub/data/textures/ground/road_01.dds"
   }
 }

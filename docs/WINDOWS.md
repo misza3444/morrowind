@@ -50,6 +50,6 @@ Niestandardowe lokalizacje narzędzi można wskazać przez `--seven-zip` w insta
 
 **Zakres weryfikacji**
 
-W obecnej maszynie sprawdzono 10 testów narzędzi, regresję 12 testów na Linuksie i 12 testów silnika Windows uruchomionego przez Wine 10/Mesa. Weryfikacja wersji Windows obejmowała natywny `Graj.exe`, folder ze spacjami i literą „Ł”, renderowanie, walkę, kolizje, nagrody, restart oraz rzeczywisty zapis i wczytanie. To weryfikacja binariów Windows przez warstwę zgodności; nie jest pomiarem na komputerze Windows z docelową kartą graficzną.
+W obecnej maszynie sprawdzono 11 testów narzędzi na Linuksie i w windowsowym Pythonie przez Wine, regresję 12 testów na Linuksie i 12 testów silnika Windows uruchomionego przez Wine 10/Mesa. Weryfikacja wersji Windows obejmowała natywny `Graj.exe`, folder ze spacjami i literą „Ł”, renderowanie, walkę, kolizje, nagrody, restart oraz rzeczywisty zapis i wczytanie. Pełny zestaw gry przeszedł również po dołączeniu modeli świątyni, wyposażenia i tekstury podłoża; sprawdzono sumy wszystkich 941 plików ZIP-a oraz 11 plików wybranej paczki zasobów. To weryfikacja binariów Windows przez warstwę zgodności; nie jest pomiarem na komputerze Windows z docelową kartą graficzną.
 
 Workflow Windows dodatkowo wykonuje testy narzędzi, sprawdza wersję natywnego silnika, kompiluje launcher przez MSVC i sprawdza generowanie profilu Unicode. Nie traktuje testu `--check` jako testu renderowania; pełną regresję gry wykonuje osobne zadanie linuksowe.
