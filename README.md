@@ -6,7 +6,13 @@ Obecna wersja to techniczny prototyp walki: kamera zza pleców, namierzanie, trz
 
 ![Rzeczywisty kadr z prototypu w OpenMW](docs/images/arena.png)
 
-**Uruchomienie w przygotowanym środowisku Linux x86_64**
+**Windows 10/11 x64 — gotowa paczka**
+
+Pobierz `LowcaEcha-Windows-x64.zip` z artefaktów ostatniego udanego uruchomienia [GitHub Actions](https://github.com/misza3444/morrowind/actions/workflows/build.yml), rozpakuj cały ZIP i uruchom **`Graj.exe`**. Artefakt Actions zawiera ZIP gry i plik sumy kontrolnej. Lokalnie zbudowana paczka znajduje się w `dist/`. Do grania z paczki nie są potrzebne Python, Git ani Morrowind. Potrzebny jest sterownik grafiki obsługujący OpenGL 3.3 lub nowszy.
+
+Paczka zawiera silnik i biblioteki Visual C++ z oficjalnego wydania OpenMW. Nie uruchamia instalatora administratora ani nie zmienia systemowej instalacji OpenMW. Natywny launcher obsługuje spacje i polskie znaki w ścieżkach. Zapisy i ustawienia znajdują się w `profile/` obok gry; ustawienia użytkownika są zachowywane między uruchomieniami. Instrukcja i polecenia deweloperskie: [WINDOWS.md](docs/WINDOWS.md).
+
+**Linux x86_64 — środowisko deweloperskie**
 
 Wymagania: Python 3.12+, Git i Git LFS. Do testów bez ekranu potrzebny jest Xorg z modułem `dummy` i Mesa; są dostępne w obecnej maszynie. Zrzuty ekranu korzystają z polecenia `import` programu ImageMagick. Pakiet silnika pobierany jest z oficjalnego wydania GitHub i sprawdzany przez SHA-256; zasoby LFS są przypięte do konkretnego commitu i weryfikowane.
 
@@ -26,7 +32,7 @@ python3 tools/run.py --test --headless
 python3 tools/run.py --headless --capture build/echo-arena.png
 ```
 
-Testy uruchamiają się na osobnym profilu i nie modyfikują zapisów zwykłej gry. Czysta instalacja wymaga sieci; późniejsze uruchomienia i testy działają na pobranych plikach. W tej wersji automatyczny instalator obsługuje Linux x86_64; pakiet Windows nie został przygotowany ani sprawdzony.
+Testy uruchamiają się na osobnym profilu i nie modyfikują zapisów zwykłej gry. Czysta instalacja wymaga sieci; późniejsze uruchomienia i testy działają na pobranych plikach. `tools/setup.py` i `tools/run.py` obsługują także Windows x64; wirtualny ekran i zrzuty przez `--capture` są narzędziami Linuksa.
 
 **Sterowanie**
 
@@ -49,9 +55,11 @@ Umiejętności i unik korzystają z czasu symulacji; pauza zatrzymuje odnowienie
 - `game/scripts/echo/`: reguły walki, sterowanie, HUD, zachowanie przeciwników, stan wyprawy i zapis.
 - `tools/build_content.py`: generator dodatku `.omwaddon`, areny, modeli COLLADA i tekstur zastępczych. Wygenerowany dodatek można otworzyć w OpenMW-CS z szablonem jako plikiem nadrzędnym.
 - `dependencies.lock.json`: przypięte wydanie silnika, suma kontrolna i commit zasobów.
+- `packaging/windows/`: źródło natywnego launchera `Graj.exe` i instrukcja paczki; `tools/package_windows.py` buduje ZIP z manifestem SHA-256.
 - `tests/engine/`: testy wykonujące kod gry w prawdziwym silniku; ich skrypty nie są ładowane podczas zwykłej gry.
 - `.runtime/`: pobrany silnik, zasoby oraz oddzielne profile gry i testów; katalog pomijany przez Git.
 - `build/data/`: generowana zawartość, odtwarzana z kodu przy każdym uruchomieniu.
+- `.github/workflows/build.yml`: testy narzędzi na Windows, kompilacja i sprawdzenie launchera ze ścieżką Unicode, artefakt ZIP oraz regresja gry na Linuksie.
 
 Log zwykłej gry: `.runtime/profile/openmw.log`. Zapisy: `.runtime/profile/user/saves/`. Log testów: `.runtime/test-profile/openmw.log`. Wczytanie konkretnego pliku: `python3 tools/run.py --load /pełna/ścieżka/do/pliku.omwsave`.
 

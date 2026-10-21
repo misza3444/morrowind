@@ -1,0 +1,76 @@
+name: Validate and build Windows ZIP
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test native Windows tooling
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+      - name: Prepare verified Windows runtime and assets
+        run: python tools/setup.py
+      - name: Verify native Windows engine binary
+        shell: pwsh
+        run: |
+          & ".runtime/OpenMW-0.51.0-Windows-x64/openmw.exe" --version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build portable game ZIP
+        shell: cmd
+        run: |
+          @echo off
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do call "%%i\Common7\Tools\VsDevCmd.bat" -arch=x64
+          python tools/package_windows.py
+      - name: Validate native launcher with Unicode paths
+        shell: pwsh
+        run: |
+          $EchoWindowsCheckRoot = Join-Path $env:RUNNER_TEMP 'Łowca Echa path test'
+          Expand-Archive -LiteralPath dist/LowcaEcha-Windows-x64.zip -DestinationPath $EchoWindowsCheckRoot
+          $EchoPackageRoot = Join-Path $EchoWindowsCheckRoot 'LowcaEcha-Windows-x64'
+          $EchoCheck = Start-Process -FilePath (Join-Path $EchoPackageRoot 'Graj.exe') -ArgumentList '--check' -Wait -PassThru
+          if ($EchoCheck.ExitCode -ne 0) { throw 'Native launcher profile check failed' }
+          $EchoConfig = Get-Content -LiteralPath (Join-Path $EchoPackageRoot 'profile/openmw.cfg') -Raw -Encoding utf8
+          if (-not $EchoConfig.Contains('Łowca Echa')) { throw 'Unicode path was lost' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LowcaEcha-Windows-x64
+          path: |
+            dist/LowcaEcha-Windows-x64.zip
+            dist/LowcaEcha-Windows-x64.zip.sha256
+          if-no-files-found: error
+
+  linux-game:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install virtual display and graphics runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-lfs xserver-xorg-core xserver-xorg-video-dummy libgl1-mesa-dri libglu1-mesa
+      - name: Test tooling
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Prepare Linux runtime and assets
+        run: python tools/setup.py
+      - name: Validate actual engine gameplay
+        run: python tools/run.py --test --headless --timeout 150
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: linux-engine-logs
+          path: .runtime/test-profile/*.log

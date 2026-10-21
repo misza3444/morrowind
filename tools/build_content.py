@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build a small ESM3 addon and original placeholder geometry from source."""
 from pathlib import Path
+import argparse
 import struct
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -65,7 +66,7 @@ def box(path, size, color, center=(0, 0, 0)):
 <scene><instance_visual_scene url="#scene"/></scene></COLLADA>
 ''' % (' '.join(map(str,color)), ' '.join(positions), ' '.join(normals),
        ' '.join(str(i) for i in range(36) for _ in range(2)))
-    path.write_text(text)
+    path.write_text(text,encoding='utf-8')
 
 
 def dds(path, color):
@@ -77,8 +78,9 @@ def dds(path, color):
     path.write_bytes(b'DDS ' + struct.pack('<31I', *header) + bytes(color)*16)
 
 
-def main():
-    meshes = BUILD / 'meshes/echo'
+def main(output=None):
+    build = Path(output) if output is not None else BUILD
+    meshes = build / 'meshes/echo'
     meshes.mkdir(parents=True, exist_ok=True)
     definitions = {
         'floor': ((2200,2200,50),(.075,.09,.14,1),(0,0,-25)),
@@ -90,11 +92,11 @@ def main():
     for name, (size,color,center) in definitions.items():
         box(meshes / (name+'.dae'),size,color,center)
     box(meshes/'empty.dae',(.001,.001,.001),(0,0,0,0))
-    dds(BUILD/'textures/echo/white.dds',(255,255,255,255))
-    dds(BUILD/'textures/hu_male.dds',(112,160,195,255))
-    dds(BUILD/'textures/menu_icon_equip.dds',(90,200,255,255))
+    dds(build/'textures/echo/white.dds',(255,255,255,255))
+    dds(build/'textures/hu_male.dds',(112,160,195,255))
+    dds(build/'textures/menu_icon_equip.dds',(90,200,255,255))
     for name in ('top','bottom','vert'):
-        dds(BUILD/f'textures/menu_small_energy_bar_{name}.dds',(40,76,110,255))
+        dds(build/f'textures/menu_small_energy_bar_{name}.dds',(40,76,110,255))
 
     contents = []
     for name in definitions:
@@ -159,9 +161,11 @@ def main():
     header=sub('HEDR',struct.pack('<fi32s256si',1.3,0,b'Echo Hunter',b'Original standalone action prototype',len(contents)))
     master=TEMPLATE/'game_template/data/template.omwgame'
     header+=sub('MAST','template.omwgame')+sub('DATA',struct.pack('<Q',master.stat().st_size))
-    (BUILD/'echo.omwaddon').write_bytes(record('TES3',header)+b''.join(contents))
+    (build/'echo.omwaddon').write_bytes(record('TES3',header)+b''.join(contents))
     print('Built Echo Arena, original geometry and actor records.')
 
 
 if __name__ == '__main__':
-    main()
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output',type=Path,default=BUILD)
+    main(parser.parse_args().output)

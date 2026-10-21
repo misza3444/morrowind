@@ -3,7 +3,11 @@
     "version": "0.51.0",
     "url": "https://github.com/OpenMW/openmw/releases/download/openmw-0.51.0/openmw-0.51.0-Linux-64Bit.tar.gz",
     "sha256": "a39459e6adad06163eb0ffd4d80229e13aec8748211c3dfd5bf95c204ae68f0b",
-    "source_commit": "f4bec41444214a7903bebd178389ca22ca13f646"
+    "source_commit": "f4bec41444214a7903bebd178389ca22ca13f646",
+    "windows": {
+      "url": "https://github.com/OpenMW/openmw/releases/download/openmw-0.51.0/OpenMW-0.51.0-Windows-x64.exe",
+      "sha256": "56f6ccda630860a3197fb10c802e047740ea92230474dc442a39674e227f9ce7"
+    }
   },
   "template": {
     "url": "https://gitlab.com/OpenMW/example-suite.git",

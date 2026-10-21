@@ -1,0 +1,27 @@
+ŁOWCA ECHA — prototyp Windows x64
+
+1. Rozpakuj cały ZIP do folderu, w którym możesz zapisywać pliki.
+2. Uruchom Graj.exe.
+
+Do uruchomienia paczki nie potrzebujesz Pythona, Gita ani Morrowinda.
+Wymagania: Windows 10/11 x64, sterownik grafiki z OpenGL 3.3 lub nowszym.
+Biblioteki Visual C++ są dołączone obok silnika; gra nie instaluje nic w systemie.
+
+Sterowanie:
+WASD — ruch, mysz — kamera, LPM — cios i kolejkowanie combo,
+spacja — unik, Tab — namierzanie, Q/E — zdolności, R — nowa wyprawa,
+F6 — zapis, F7 — wczytanie, Esc — menu.
+
+Zapisy: profile\user\saves
+Log: profile\openmw.log
+Ustawienia obrazu: profile\settings.cfg (zachowywane między uruchomieniami).
+Paczka używa własnego profilu, niezależnego od instalacji Morrowinda/OpenMW.
+
+Testy integracyjne: w terminalu uruchom Graj.exe --test.
+Używają oddzielnego katalogu test-profile i nie zmieniają zwykłych zapisów.
+
+To wczesny prototyp techniczny z grafiką zastępczą.
+Źródła gry: https://github.com/misza3444/morrowind
+Źródła silnika OpenMW 0.51.0:
+https://github.com/OpenMW/openmw/tree/openmw-0.51.0
+Licencje i autorzy zasobów: katalog licenses oraz engine\LICENSE.txt.

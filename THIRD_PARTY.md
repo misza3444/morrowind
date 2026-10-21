@@ -6,4 +6,6 @@
 
 Autorzy Example Suite wymienieni przez upstream: Bret Curtis (psi29a), DestinedToDie, Isak Larborn, Leja Pelc (Mclawliet), Matjaž Lamut (Lamoot), Nelsson Huotari (unelsson). Pełna lista, w tym przypisania poszczególnych zasobów, pozostaje w upstream `AUTHORS.md`.
 
+Paczka Windows zachowuje informacje licencyjne i oryginalny instalator Microsoft Visual C++ Redistributable dołączony przez OpenMW w `engine/redist/`. Jego niezmienione biblioteki x64 są rozmieszczane lokalnie przy silniku; ich pochodzenie i SHA-256 rejestruje `engine/app-local-runtime.json`. Nie są pobierane z nieoficjalnych serwisów DLL ani instalowane globalnie. Źródło natywnego launchera projektu znajduje się w `packaging/windows/launcher.c`.
+
 Arena, prosta geometria broni, zastępcze tekstury w `build/data/textures` i kod `game/scripts/echo` powstały w tym projekcie. Generowane pliki odtwarza `tools/build_content.py`. Nie pobrano zasobów Bethesdy ani Solo Leveling. Nie należy traktować tego dokumentu jako nadania jednej licencji wszystkim przyszłym zasobom projektu.
