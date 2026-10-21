@@ -1,10 +1,23 @@
 ŁOWCA ECHA — prototyp Windows x64
 
-1. Rozpakuj cały ZIP do folderu, w którym możesz zapisywać pliki.
-2. Uruchom Graj.exe.
+1. Rozpakuj ZIP do folderu, w którym możesz zapisywać pliki.
+2. Uruchamiaj Graj.exe. Launcher sam sprawdza i pobiera aktualizacje.
+
+Masz starszą paczkę? Rozpakuj mały LowcaEcha-Launcher-Windows-x64.zip
+do istniejącego folderu gry i zastąp Graj.exe. Robisz to tylko raz.
+Katalog profile zostaw na miejscu — zawiera Twoje zapisy i ustawienia.
+Przy pierwszej instalacji sam mały launcher również wystarczy:
+pobierze potrzebne pliki gry po uruchomieniu.
+
+Aktualizacje pobierane są z publicznych wydań GitHub tego projektu.
+Nie wymagają konta ani tokenu. Niezmieniony silnik jest używany ponownie;
+zmiana skryptów zwykle pobiera tylko małą paczkę gry.
+Przerwane lub niepoprawne pobranie pozostawia zainstalowaną wersję.
+Bez internetu możesz wybrać „Graj bez aktualizacji”.
 
 Do uruchomienia paczki nie potrzebujesz Pythona, Gita ani Morrowinda.
-Wymagania: Windows 10/11 x64, sterownik grafiki z OpenGL 3.3 lub nowszym.
+Wymagania: Windows 10/11 x64, .NET Framework 4.8 i OpenGL 3.3 lub nowszy.
+.NET 4.8 jest wbudowany w Windows 10 od wersji 1903 oraz Windows 11.
 Biblioteki Visual C++ są dołączone obok silnika; gra nie instaluje nic w systemie.
 
 Sterowanie:
@@ -19,6 +32,11 @@ Paczka używa własnego profilu, niezależnego od instalacji Morrowinda/OpenMW.
 
 Testy integracyjne: w terminalu uruchom Graj.exe --test.
 Używają oddzielnego katalogu test-profile i nie zmieniają zwykłych zapisów.
+Tryb bez sieci: Graj.exe --offline.
+Powrót do poprzedniej zainstalowanej wersji: Graj.exe --rollback.
+
+Pliki poszczególnych wersji są w versions, a current.txt wybiera bieżącą.
+Nie przenoś pojedynczych plików pomiędzy wersjami.
 
 To wczesny prototyp techniczny z grafiką zastępczą.
 Źródła gry: https://github.com/misza3444/morrowind

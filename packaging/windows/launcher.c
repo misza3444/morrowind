@@ -81,6 +81,7 @@ static int tests_passed(const wchar_t *log)
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR command, int show)
 {
     wchar_t *root = (wchar_t *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, CAPACITY * sizeof(wchar_t));
+    wchar_t *installation = (wchar_t *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, CAPACITY * sizeof(wchar_t));
     wchar_t *profile = (wchar_t *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, CAPACITY * sizeof(wchar_t));
     wchar_t *filename = (wchar_t *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, CAPACITY * sizeof(wchar_t));
     wchar_t *engine = (wchar_t *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, CAPACITY * sizeof(wchar_t));
@@ -92,23 +93,36 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR command, int s
     STARTUPINFOW startup = {0};
     PROCESS_INFORMATION process;
     DWORD exit_code = 1, length, waited;
-    int count, test = 0, check = 0, result = 1;
+    int count, i, test = 0, check = 0, legacy = 0, result = 1;
     LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &count);
     startup.cb = sizeof(startup);
     (void)instance; (void)previous; (void)command; (void)show;
-    if (argv && count == 2 && !wcscmp(argv[1], L"--test")) test = 1;
-    if (argv && count == 2 && !wcscmp(argv[1], L"--check")) check = 1;
+    if (argv) for (i = 1; i < count; ++i) {
+        if (!wcscmp(argv[i], L"--test")) test = 1;
+        if (!wcscmp(argv[i], L"--check")) check = 1;
+        if (!wcscmp(argv[i], L"--legacy")) legacy = 1;
+    }
     if (argv) LocalFree(argv);
-    if (!root || !profile || !filename || !engine || !executable || !arguments) goto finish;
+    if (!root || !installation || !profile || !filename || !engine || !executable || !arguments) goto finish;
     length = GetModuleFileNameW(NULL, root, CAPACITY);
     if (!length || length >= CAPACITY || !(separator = wcsrchr(root, L'\\'))) goto finish;
     separator[1] = 0;
+    if (legacy) {
+        if (!path(arguments, root, L"..\\")) goto finish;
+        length = GetFullPathNameW(arguments, CAPACITY, root, NULL);
+        if (!length || length >= CAPACITY) goto finish;
+        wcscpy(installation, root);
+    } else {
+        if (!path(arguments, root, L"..\\..\\")) goto finish;
+        length = GetFullPathNameW(arguments, CAPACITY, installation, NULL);
+        if (!length || length >= CAPACITY) goto finish;
+    }
     if (!path(engine, root, L"engine") || !path(executable, root, L"engine\\openmw.exe")) goto finish;
     if (GetFileAttributesW(executable) == INVALID_FILE_ATTRIBUTES) {
         error = L"Brakuje engine\\openmw.exe. Rozpakuj cały ZIP przed uruchomieniem gry.";
         goto finish;
     }
-    if (!path(profile, root, test ? L"test-profile" : L"profile") || !directory(profile)) goto finish;
+    if (!path(profile, installation, test ? L"test-profile" : L"profile") || !directory(profile)) goto finish;
     if (!path(filename, profile, L"\\user") || !directory(filename)) goto finish;
     if (!path(filename, profile, L"\\user\\data") || !directory(filename)) goto finish;
     if (!path(filename, profile, L"\\openmw.cfg")) goto finish;
@@ -140,8 +154,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR command, int s
     if (check) { result = 0; goto finish; }
     /* OpenMW's Windows CRT argv uses the active ANSI code page. Keep option
        arguments relative/ASCII; the Unicode working directory uses Win32W. */
-    swprintf(arguments, CAPACITY * 3, L"\"%ls\" --config \"..\\%ls\" --no-grab", executable,
-             test ? L"test-profile" : L"profile");
+    swprintf(arguments, CAPACITY * 3, L"\"%ls\" --config \"%ls%ls\" --no-grab", executable,
+             legacy ? L"..\\" : L"..\\..\\..\\", test ? L"test-profile" : L"profile");
     error = L"Nie można uruchomić OpenMW. Jeżeli brakuje VCRUNTIME lub MSVCP, uruchom engine\\redist\\vc_redist.x64.exe.";
     if (!CreateProcessW(executable, arguments, NULL, NULL, FALSE, 0, NULL, engine, &startup, &process)) goto finish;
     waited = WaitForSingleObject(process.hProcess, test ? 180000 : INFINITE);
@@ -160,6 +174,7 @@ finish:
     if (config != INVALID_HANDLE_VALUE) CloseHandle(config);
     if (result && !test && !check) MessageBoxW(NULL, error, L"Łowca Echa", MB_ICONERROR | MB_OK);
     if (root) HeapFree(GetProcessHeap(), 0, root);
+    if (installation) HeapFree(GetProcessHeap(), 0, installation);
     if (profile) HeapFree(GetProcessHeap(), 0, profile);
     if (filename) HeapFree(GetProcessHeap(), 0, filename);
     if (engine) HeapFree(GetProcessHeap(), 0, engine);
