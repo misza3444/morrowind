@@ -77,8 +77,10 @@ class ProfileTests(unittest.TestCase):
             self.assertFalse(data.startswith(b'\xef\xbb\xbf'))
             config=data.decode('utf-8')
             self.assertIn(profile.as_posix(),config)
-            self.assertIn('replace=content\n',config)
-            self.assertIn('content=echo.omwaddon\n',config)
+            # Windows writes CRLF and Linux writes LF; both are valid config files.
+            lines=config.splitlines()
+            self.assertIn('replace=content',lines)
+            self.assertIn('content=echo.omwaddon',lines)
             self.assertNotIn('Morrowind.esm',config)
             self.assertNotIn('echo-tests.omwscripts',config)
 

@@ -28,3 +28,5 @@ Dodatkowo wysłano rzeczywiste zdarzenia klawiatury przez XTest do okna gry: Q u
 Pozostają ostrzeżenia upstream dotyczące kanału UV modeli COLLADA i nazw części kości przykładowego stworzenia. Nie uniemożliwiły renderowania ani testowanych animacji. Prototyp nie jest jeszcze oceną jakości docelowej walki. Brak pomiarów na GPU gracza, testów gamepada, długich sesji i migracji zapisów między wersjami. Testy walki uruchamiają publiczny interfejs kontrolera; nie zastępują oceny responsywności klawiatury i myszy przez gracza.
 
 Obsługę Windows i osobną weryfikację binariów Windows przez Wine opisuje [WINDOWS.md](WINDOWS.md). Po zmianach narzędzi uruchomiono ponownie 12 testów regresji Linuksa i 10 testów narzędzi, w tym zachowanie ustawień, ścieżki Unicode, odrzucanie błędnej sumy i obsługę procesu Windows.
+
+Pierwszy przebieg CI Windows wykazał błędne oczekiwanie testu dotyczące zakończeń wierszy: poprawny plik CRLF porównywano z tekstem LF. Błąd odtworzono windowsowym Pythonem 3.12 przez Wine. Po poprawce test sprawdza całe linie niezależnie od formatu zakończeń; wszystkie 10 testów narzędzi przeszło zarówno na Linuksie, jak i w windowsowym Pythonie przez Wine.
