@@ -1,0 +1,13 @@
+{
+  "openmw": {
+    "version": "0.51.0",
+    "url": "https://github.com/OpenMW/openmw/releases/download/openmw-0.51.0/openmw-0.51.0-Linux-64Bit.tar.gz",
+    "sha256": "a39459e6adad06163eb0ffd4d80229e13aec8748211c3dfd5bf95c204ae68f0b",
+    "source_commit": "f4bec41444214a7903bebd178389ca22ca13f646"
+  },
+  "template": {
+    "url": "https://gitlab.com/OpenMW/example-suite.git",
+    "commit": "a41b44d9403ff3f8a1505c1b4bc152c4dd623b64",
+    "lfs_include": "game_template/data/**,example_animated_creature/data/**"
+  }
+}

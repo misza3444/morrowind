@@ -1,0 +1,4 @@
+GLOBAL: tests/world.lua
+CREATURE: tests/actor.lua
+PLAYER: tests/player.lua
+MENU: tests/menu.lua
